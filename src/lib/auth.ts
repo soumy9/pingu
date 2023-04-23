@@ -1,17 +1,17 @@
 import { NextAuthOptions } from "next-auth";
 import { UpstashRedisAdapter } from "@next-auth/upstash-redis-adapter";
 import { db } from "./db";
-
 import GoogleProvider from "next-auth/providers/google";
+import { fetchRedis } from "@/helpers/redis";
 
-function getGoolgeCredentials() {
+function getGoogleCredentials() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-	//console.log({clientId,clientSecret});
-	
+
   if (!clientId || clientId.length === 0) {
     throw new Error("Missing GOOGLE_CLIENT_ID");
   }
+
   if (!clientSecret || clientSecret.length === 0) {
     throw new Error("Missing GOOGLE_CLIENT_SECRET");
   }
@@ -24,25 +24,32 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+
   pages: {
     signIn: "/login",
   },
   providers: [
     GoogleProvider({
-      clientId: getGoolgeCredentials().clientId,
-      clientSecret: getGoolgeCredentials().clientSecret,
+      clientId: getGoogleCredentials().clientId,
+      clientSecret: getGoogleCredentials().clientSecret,
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
-			console.log({ token, user });
-      const dbUser = (await db.get(`user:${token.id}`)) as User | null;
-			console.log({dbUser});
+      const dbUserResult = (await fetchRedis("get", `user:${token.id}`)) as
+        | string
+        | null;
 
-      if (!dbUser) {
-        token.id = user!.id;
+      if (!dbUserResult) {
+        if (user) {
+          token.id = user!.id;
+        }
+
         return token;
       }
+
+      const dbUser = JSON.parse(dbUserResult) as User;
+
       return {
         id: dbUser.id,
         name: dbUser.name,
@@ -52,13 +59,12 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token) {
-        session.user = {
-          id: token.id,
-          name: token.name,
-          email: token.email,
-          image: token.picture,
-        };
+        session.user.id = token.id;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.image = token.picture;
       }
+
       return session;
     },
     redirect() {

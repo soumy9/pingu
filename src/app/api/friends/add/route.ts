@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     console.log("email", { emailToAdd });
 		const idToAdd = await fetchRedis('get', `user:email:${emailToAdd}`) as string;
     const RESTResponse = await fetch(
-      `${process.env.UPSTASH_REDIS_REST_URL}/get/user:email${emailToAdd}`,
+      `${process.env.UPSTASH_REDIS_REST_URL}/get/user:email:${emailToAdd}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
@@ -30,7 +30,6 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
 		console.log({session});
 		
-
     if (!session) {
       return new Response("Unauthorized", { status: 401 });
     }
@@ -51,7 +50,7 @@ export async function POST(req: Request) {
       session.user.id
     )) as 0 | 1;
     if (isAlreadyAdded) {
-      throw new Response("Already added this user", { status: 400 });
+      return new Response("Already added this user", { status: 400 });
     }
 
     // check if user is already Friends i.e. in friend list of user1
@@ -61,7 +60,7 @@ export async function POST(req: Request) {
       idToAdd
     )) as 0 | 1;
     if (isAlreadyFriends) {
-      throw new Response("Already friends this user", { status: 400 });
+      return new Response("Already friends this user", { status: 400 });
     }
 
     //valid request, send friend request
