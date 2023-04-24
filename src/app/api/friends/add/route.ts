@@ -5,6 +5,8 @@ import { addFriendValidator } from "@/lib/validations/add-friend";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 
+
+// https://beta.nextjs.org/docs/routing/route-handlers
 export async function POST(req: Request) {
   try {
     const body = await req.json();

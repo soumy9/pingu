@@ -29,16 +29,17 @@ const AddFriendButton: FC<AddFriendButtonProps> = ({}) => {
       await axios.post("/api/friends/add", {
         email: validatedEmail,
       });
+      setShowSuccessState(true);
     } catch (error) {
-			console.log({error});
-			
+      console.log({ error });
+
       if (error instanceof z.ZodError) {
         setError("email", { message: error.message });
         return;
       }
       if (error instanceof AxiosError) {
         setError("email", { message: error.response?.data });
-				return;
+        return;
       }
 
       setError("email", { message: "Something went wrong." });
@@ -46,7 +47,7 @@ const AddFriendButton: FC<AddFriendButtonProps> = ({}) => {
   };
 
   const onSubmit = (data: FormData) => {
-		console.log('onSubmit',{data});
+    console.log("onSubmit", { data });
     addFriend(data.email);
   };
   return (
@@ -70,7 +71,7 @@ const AddFriendButton: FC<AddFriendButtonProps> = ({}) => {
       </div>
       <p className="mt-1 text-sm text-red-600">{errors.email?.message}</p>
       {showSuccessState ? (
-        <p className="mt-1 text-sm text-green-600"> Friend request sent</p>
+        <p className="mt-1 text-sm text-green-600"> Friend request sent!</p>
       ) : null}
     </form>
   );
