@@ -6,7 +6,7 @@ interface pageProps {}
 const Page: FC<pageProps> = async () => {
 
   const session = await getServerSession()
-	return <pre>{JSON.stringify(session)}</pre>;
+	return <p>Dashboard</p>;
 };
 
 export default Page;
