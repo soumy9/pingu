@@ -1,15 +1,17 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { pusherClient, pusherServer } from "@/lib/pusher";
+import { cn, messageSocket } from "@/lib/utils";
 import { format } from "date-fns";
 import Image from "next/image";
-import { FC, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 interface MessagesProps {
   initialMessages: Message[];
   sessionId: string;
   sessionImg: string;
   chatPartner: User;
+  chatId: string;
 }
 
 const Messages: FC<MessagesProps> = ({
@@ -17,12 +19,27 @@ const Messages: FC<MessagesProps> = ({
   sessionId,
   sessionImg,
   chatPartner,
+  chatId,
 }) => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const scrollDownRef = useRef<HTMLDivElement | null>(null);
   const formatTimestamp = (timestamp: number): string => {
-    return format(new Date(timestamp), "hh:mmaaaaa'm' MMMM dd, yyyy");
+    return format(new Date(timestamp), "hh:mmaaaaa'm' dd MMMM, yyyy");
   };
+
+  useEffect(() => {
+    const { event, channel } = messageSocket(chatId);
+    pusherClient.subscribe(channel);
+    const messageHandler = (data: Message) => {
+      setMessages((prev) => [data,...prev]);
+    };
+    pusherClient.bind(event, messageHandler);
+
+    return () => {
+      pusherClient.unsubscribe(channel);
+      pusherClient.unbind(event, messageHandler);
+    };
+  }, []);
   return (
     <div
       id="messages"

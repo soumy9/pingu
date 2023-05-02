@@ -1,8 +1,10 @@
 "use client";
+import { pusherClient } from "@/lib/pusher";
+import { friendRequestSocket, toPusherKey } from "@/lib/utils";
 import axios from "axios";
 import { Check, UserPlus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 interface FriendRequestsProps {
   incomingFriendRequests: IncomingFriendRequest[];
@@ -16,27 +18,41 @@ const FriendRequests: FC<FriendRequestsProps> = ({
   const [friendRequests, setFriendRequests] = useState<IncomingFriendRequest[]>(
     incomingFriendRequests
   );
-	const router = useRouter();
+  const router = useRouter();
   const acceptFriend = async (senderId: string) => {
-		console.log('acceptFriend');
-		
+    console.log("acceptFriend");
+
     await axios.post("/api/friends/accept", {
       id: senderId,
     });
     setFriendRequests((prev) =>
       prev.filter((request) => request.senderId !== senderId)
     );
-		router.refresh();
+    router.refresh();
   };
-	const denyFriend = async (senderId: string) => {
+  const denyFriend = async (senderId: string) => {
     await axios.post("/api/friends/deny", {
       id: senderId,
     });
     setFriendRequests((prev) =>
       prev.filter((request) => request.senderId !== senderId)
     );
-		router.refresh();
+    router.refresh();
   };
+
+  useEffect(() => {
+    const { channel, event } = friendRequestSocket(sessionId);
+    const friendRequestsHandler = (data: IncomingFriendRequest) => {
+      setFriendRequests((prev) => [...prev, data]);
+    };
+    pusherClient.subscribe(channel);
+    pusherClient.bind(event, friendRequestsHandler);
+
+    return () => {
+      pusherClient.unsubscribe(channel);
+      pusherClient.unbind(event, friendRequestsHandler);
+    };
+  }, []);
   return (
     <>
       {friendRequests.length === 0 ? (

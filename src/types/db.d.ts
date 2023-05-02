@@ -13,6 +13,11 @@ interface Message {
   timestamp: number;
 }
 
+interface ExtendedMessage extends Message {
+	senderName: string;
+	senderProfileImg: string;
+}
+
 interface Chat {
   id: string;
   messages: Messages[];

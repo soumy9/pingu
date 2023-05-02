@@ -1,10 +1,11 @@
 import { fetchRedis } from "@/helpers/redis";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { pusherServer } from "@/lib/pusher";
+import { friendRequestSocket, toPusherKey } from "@/lib/utils";
 import { addFriendValidator } from "@/lib/validations/add-friend";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
-
 
 // https://beta.nextjs.org/docs/routing/route-handlers
 export async function POST(req: Request) {
@@ -13,7 +14,10 @@ export async function POST(req: Request) {
     console.log("POST", { body });
     const { email: emailToAdd } = addFriendValidator.parse(body.email);
     console.log("email", { emailToAdd });
-		const idToAdd = await fetchRedis('get', `user:email:${emailToAdd}`) as string;
+    const idToAdd = (await fetchRedis(
+      "get",
+      `user:email:${emailToAdd}`
+    )) as string;
     const RESTResponse = await fetch(
       `${process.env.UPSTASH_REDIS_REST_URL}/get/user:email:${emailToAdd}`,
       {
@@ -30,8 +34,8 @@ export async function POST(req: Request) {
       return new Response("This person does not exist.", { status: 400 });
     }
     const session = await getServerSession(authOptions);
-		console.log({session});
-		
+    console.log({ session });
+
     if (!session) {
       return new Response("Unauthorized", { status: 401 });
     }
@@ -41,11 +45,11 @@ export async function POST(req: Request) {
       });
     }
 
-		//user1->sending friend request
-		//user2->to whom request will be sent
+    //user1->sending friend request
+    //user2->to whom request will be sent
 
     // check if user is already added
-		//i.e. in user2's recieved requests, check if user1's id is already present
+    //i.e. in user2's recieved requests, check if user1's id is already present
     const isAlreadyAdded = (await fetchRedis(
       "sismember",
       `user:${idToAdd}:incoming_friend_requests`,
@@ -66,8 +70,13 @@ export async function POST(req: Request) {
     }
 
     //valid request, send friend request
+    const { channel, event } = friendRequestSocket(idToAdd);
+    pusherServer.trigger(channel, event, {
+      senderId: session.user.id,
+      senderEmail: session.user.email,
+    });
     //here param1: key is the name of the set, param2: value to be added to set
-		// so, in the set of incoming friend requests of user2, add user1 also
+    // so, in the set of incoming friend requests of user2, add user1 also
     db.sadd(`user:${idToAdd}:incoming_friend_requests`, session.user.id);
     return new Response("OK");
   } catch (error) {
