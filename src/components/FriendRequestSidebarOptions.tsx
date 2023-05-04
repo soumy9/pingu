@@ -1,8 +1,9 @@
 "use client";
 import { pusherClient } from "@/lib/pusher";
-import { friendRequestSocket, toPusherKey } from "@/lib/utils";
+import { friendRequestSocket, newFriendSocket, toPusherKey } from "@/lib/utils";
 import { User } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FC, useEffect, useState } from "react";
 
 interface FriendRequestSidebarOptionsProps {
@@ -19,7 +20,7 @@ const FriendRequestSidebarOptions: FC<FriendRequestSidebarOptionsProps> = ({
   );
 
   useEffect(() => {
-    const {channel,event} = friendRequestSocket(sessionId);
+    const { channel, event } = friendRequestSocket(sessionId);
     const friendRequestsHandler = () => {
       setUnseenRequestsCount((count) => count + 1);
     };
@@ -31,6 +32,22 @@ const FriendRequestSidebarOptions: FC<FriendRequestSidebarOptionsProps> = ({
       pusherClient.unbind(event, friendRequestsHandler);
     };
   }, []);
+
+  useEffect(() => {
+    const requestAcceptedHandler = ({ acceptor }: { acceptor: string }) => {
+      alert(acceptor);
+      //router.refresh();
+    };
+    const { event, channel } = newFriendSocket(sessionId);
+    pusherClient.subscribe(channel);
+    pusherClient.bind(event, requestAcceptedHandler);
+
+    return () => {
+      pusherClient.unsubscribe(channel);
+      pusherClient.unbind(event, requestAcceptedHandler);
+    };
+  }, []);
+
   return (
     <Link
       href="/dashboard/requests"

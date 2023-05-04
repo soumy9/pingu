@@ -23,6 +23,15 @@ export const friendRequestSocket = (
   };
 };
 
+export const newFriendSocket = (
+	friendId: string
+): { channel: string; event: string } => {
+  return {
+    channel: toPusherKey(`user:${friendId}:accepted`),
+    event: "new_friend",
+  };
+};
+
 export const messageSocket = (
   chatId: string
 ): { channel: string; event: string } => {
