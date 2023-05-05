@@ -47,7 +47,7 @@ export async function POST(req: Request) {
 		const { channel, event } = newFriendSocket(idToAdd);
 
     pusherServer.trigger(channel, event, {
-      acceptor: session.user.id,
+      ...session.user
     });
     return new Response("OK");
   } catch (error) {

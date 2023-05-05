@@ -1,10 +1,11 @@
 "use client";
+import { FriendRequestContext } from "@/context/AppContext";
 import { pusherClient } from "@/lib/pusher";
 import { friendRequestSocket, toPusherKey } from "@/lib/utils";
 import axios from "axios";
 import { Check, UserPlus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FC, useEffect, useState } from "react";
+import { FC, useContext, useEffect, useState } from "react";
 
 interface FriendRequestsProps {
   incomingFriendRequests: IncomingFriendRequest[];
@@ -18,6 +19,7 @@ const FriendRequests: FC<FriendRequestsProps> = ({
   const [friendRequests, setFriendRequests] = useState<IncomingFriendRequest[]>(
     incomingFriendRequests
   );
+  const { dispatch } = useContext(FriendRequestContext);
   const router = useRouter();
   const acceptFriend = async (senderId: string) => {
     console.log("acceptFriend");
@@ -28,6 +30,9 @@ const FriendRequests: FC<FriendRequestsProps> = ({
     setFriendRequests((prev) =>
       prev.filter((request) => request.senderId !== senderId)
     );
+		dispatch({
+			type: "decrement-request-count",
+		});
     router.refresh();
   };
   const denyFriend = async (senderId: string) => {
@@ -37,6 +42,9 @@ const FriendRequests: FC<FriendRequestsProps> = ({
     setFriendRequests((prev) =>
       prev.filter((request) => request.senderId !== senderId)
     );
+		dispatch({
+			type: "decrement-request-count",
+		});
     router.refresh();
   };
 

@@ -1,10 +1,13 @@
 "use client";
+import { FriendRequestContext } from "@/context/AppContext";
 import { pusherClient } from "@/lib/pusher";
 import { friendRequestSocket, newFriendSocket, toPusherKey } from "@/lib/utils";
 import { User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FC, useEffect, useState } from "react";
+import { FC, useContext, useEffect } from "react";
+import { toast } from "react-hot-toast";
+import FriendRequestAcceptedToast from "./FriendRequestAcceptedToast";
 
 interface FriendRequestSidebarOptionsProps {
   sessionId: string;
@@ -15,14 +18,22 @@ const FriendRequestSidebarOptions: FC<FriendRequestSidebarOptionsProps> = ({
   sessionId,
   initialUnseenRequestsCount,
 }) => {
-  const [unseenRequestsCount, setUnseenRequestsCount] = useState<number>(
-    initialUnseenRequestsCount
-  );
+  const { state, dispatch } = useContext(FriendRequestContext);
+  const router = useRouter();
+
+  useEffect(() => {
+    dispatch({
+      type: "set-request-count",
+      requestCount: initialUnseenRequestsCount,
+    });
+  }, []);
 
   useEffect(() => {
     const { channel, event } = friendRequestSocket(sessionId);
     const friendRequestsHandler = () => {
-      setUnseenRequestsCount((count) => count + 1);
+      dispatch({
+        type: "increment-request-count",
+      });
     };
     pusherClient.subscribe(channel);
     pusherClient.bind(event, friendRequestsHandler);
@@ -34,9 +45,19 @@ const FriendRequestSidebarOptions: FC<FriendRequestSidebarOptionsProps> = ({
   }, []);
 
   useEffect(() => {
-    const requestAcceptedHandler = ({ acceptor }: { acceptor: string }) => {
-      alert(acceptor);
-      //router.refresh();
+    const requestAcceptedHandler = (acceptorData: User) => {
+			toast.custom((t) => {
+        return (
+          <FriendRequestAcceptedToast
+						t={t}
+						requestorId={sessionId}
+            acceptorName={acceptorData.name}
+						acceptorId={acceptorData.id}
+						acceptorImg={acceptorData.image}
+          />
+        );
+      });
+      router.refresh();
     };
     const { event, channel } = newFriendSocket(sessionId);
     pusherClient.subscribe(channel);
@@ -58,9 +79,9 @@ const FriendRequestSidebarOptions: FC<FriendRequestSidebarOptionsProps> = ({
       </div>
       <p className="truncate">Friend requests</p>
 
-      {unseenRequestsCount > 0 ? (
+      {state.requestCount > 0 ? (
         <div className="rounded-full w-5 h-5 text-xs flex justify-center items-center text-white bg-indigo-600">
-          {unseenRequestsCount}
+          {state.requestCount}
         </div>
       ) : null}
     </Link>
