@@ -32,6 +32,7 @@ const FriendRequests: FC<FriendRequestsProps> = ({
     );
 		dispatch({
 			type: "decrement-request-count",
+			payload: {}
 		});
     router.refresh();
   };
@@ -44,6 +45,7 @@ const FriendRequests: FC<FriendRequestsProps> = ({
     );
 		dispatch({
 			type: "decrement-request-count",
+			payload: {}
 		});
     router.refresh();
   };

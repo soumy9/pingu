@@ -22,17 +22,22 @@ const FriendRequestSidebarOptions: FC<FriendRequestSidebarOptionsProps> = ({
   const router = useRouter();
 
   useEffect(() => {
+		console.log({initialUnseenRequestsCount});
+		
     dispatch({
       type: "set-request-count",
-      requestCount: initialUnseenRequestsCount,
+			payload: {
+				requestCount: initialUnseenRequestsCount,
+			}
     });
-  }, []);
+  }, [dispatch, initialUnseenRequestsCount]);
 
   useEffect(() => {
     const { channel, event } = friendRequestSocket(sessionId);
     const friendRequestsHandler = () => {
       dispatch({
         type: "increment-request-count",
+				payload: {}
       });
     };
     pusherClient.subscribe(channel);

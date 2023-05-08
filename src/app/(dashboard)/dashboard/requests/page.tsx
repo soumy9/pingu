@@ -23,20 +23,22 @@ const Page = async () => {
         "get",
         `user:${incomingSenderId}`
       )) as string;
-			const senderParsed = JSON.parse(sender);
-			
+      const senderParsed = JSON.parse(sender) as User;
       return {
         senderId: incomingSenderId,
         senderEmail: senderParsed.email,
       };
     })
   );
-	
+
   return (
     <main className="pt-8">
       <h1 className="font-bold text-5xl mb-8">Add a friend</h1>
       <div className="flex flex-col gap-4">
-        <FriendRequests incomingFriendRequests={incomingFriendRequests} sessionId={session.user.id}/>
+        <FriendRequests
+          incomingFriendRequests={incomingFriendRequests}
+          sessionId={session.user.id}
+        />
       </div>
     </main>
   );

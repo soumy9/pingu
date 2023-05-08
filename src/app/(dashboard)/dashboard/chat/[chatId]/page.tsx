@@ -51,7 +51,11 @@ const Page = async ({ params }: PageProps) => {
   }
 
   const chatPartnerId = user.id === userId1 ? userId2 : userId1;
-  const chatPartner = (await db.get(`user:${chatPartnerId}`)) as User;
+  const chatPartnerRaw = (await fetchRedis(
+    "get",
+    `user:${chatPartnerId}`
+  )) as string;
+  const chatPartner = JSON.parse(chatPartnerRaw) as User;
   const initialMessages = await getChatMessages(chatId);
 
   return (
@@ -84,10 +88,10 @@ const Page = async ({ params }: PageProps) => {
 
       <Messages
         chatPartner={chatPartner}
-        sessionImg={session.user.image || ''}
+        sessionImg={session.user.image || ""}
         sessionId={session.user.id}
         initialMessages={initialMessages}
-				chatId={chatId}
+        chatId={chatId}
       />
       <ChatInput chatId={chatId} chatPartner={chatPartner} />
     </div>

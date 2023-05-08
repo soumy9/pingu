@@ -71,7 +71,7 @@ export async function POST(req: Request) {
 
     //valid request, send friend request
     const { channel, event } = friendRequestSocket(idToAdd);
-    pusherServer.trigger(channel, event, {
+    await pusherServer.trigger(channel, event, {
       senderId: session.user.id,
       senderEmail: session.user.email,
     });

@@ -10,7 +10,9 @@ type StateType = {
 
 type ActionType = {
   type: Actions;
-  requestCount?: number;
+  payload: {
+		requestCount?: number;
+	}
 };
 
 const initialState: StateType = {
@@ -22,7 +24,7 @@ const reducer = (state: StateType, action: ActionType): StateType => {
     case "set-request-count": {
       return {
         ...state,
-        requestCount: 0,
+        requestCount: action.payload?.requestCount || 0,
       };
     }
     case "decrement-request-count": {

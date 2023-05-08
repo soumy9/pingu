@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     await db.srem(`user:${session.user.id}:incoming_friend_requests`, idToAdd);
 		const { channel, event } = newFriendSocket(idToAdd);
 
-    pusherServer.trigger(channel, event, {
+    await pusherServer.trigger(channel, event, {
       ...session.user
     });
     return new Response("OK");

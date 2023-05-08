@@ -57,11 +57,14 @@ export async function POST(req: Request) {
 
     // all valid, send message
     const { event, channel } = messageSocket(chatId);
-    pusherServer.trigger(channel, event, message);
+    await pusherServer.trigger(channel, event, message);
 
-		// all valid, send message
-    const { event:new_msg_event, channel:new_msg_channel } = newMessageSocket(session.user.id,friendId);
-    pusherServer.trigger(new_msg_channel, new_msg_event, message);
+    // all valid, send message
+    const { event: new_msg_event, channel: new_msg_channel } = newMessageSocket(
+      session.user.id,
+      friendId
+    );
+    await pusherServer.trigger(new_msg_channel, new_msg_event, message);
 		// when a new message is sent, you have to send it to FE
 
     await db.zadd(`chat:${chatId}:messages`, {
