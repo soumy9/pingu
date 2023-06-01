@@ -43,6 +43,10 @@ const Dashboard: FC<DashboardProps> = ({
   const menuBtnClickHandler = useCallback(() => {
     setIsBurgerMenuOpen((prev) => !prev);
   }, []);
+
+	const closeBurgerMenu = () => {
+		if(isBurgerMenuOpen) setIsBurgerMenuOpen(false);
+	}
   return (
     <>
       {!isBurgerMenuOpen ? <BurgerMenu menuBtnClickHandler={menuBtnClickHandler} className="pl-6 absolute" /> : null}
@@ -76,7 +80,7 @@ const Dashboard: FC<DashboardProps> = ({
                     <li key={option.id}>
                       <Link
                         href={option.href}
-                        onClick={menuBtnClickHandler}
+                        onClick={closeBurgerMenu}
                         className="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-3 rounded-md p-2 text-sm leading-6 font-semibold"
                       >
                         <span className="text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white">
@@ -92,7 +96,7 @@ const Dashboard: FC<DashboardProps> = ({
                   <FriendRequestSidebarOptions
                     sessionId={user.id}
                     initialUnseenRequestsCount={initialUnseenRequestsCount}
-                    onClickHandler={menuBtnClickHandler}
+                    onClickHandler={closeBurgerMenu}
                   />
                 </li>
               </ul>
@@ -126,7 +130,7 @@ const Dashboard: FC<DashboardProps> = ({
         className={`w-screen h-screen fixed z-10 bg-slate-400/25 ${
           isBurgerMenuOpen ? "block" : "hidden"
         }`}
-        onClick={menuBtnClickHandler}
+        onClick={closeBurgerMenu}
       ></div>
       <aside className="max-h-screen container py-16 md:py-12 w-full">
         {children}
