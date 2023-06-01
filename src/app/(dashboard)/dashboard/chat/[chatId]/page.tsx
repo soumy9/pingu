@@ -37,7 +37,6 @@ const getChatMessages = async (chatId: string) => {
 };
 
 const Page = async ({ params }: PageProps) => {
-  console.log({ params });
   const { chatId } = params;
   const session = await getServerSession(authOptions);
   if (!session) {

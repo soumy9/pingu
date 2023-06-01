@@ -27,8 +27,6 @@ const Page = async () => {
         -1,
         -1
       );
-			console.log(typeof lastMessage);
-			
 
       return {
         ...friend,
